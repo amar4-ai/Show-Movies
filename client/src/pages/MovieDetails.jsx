@@ -6,6 +6,7 @@ import { Heart, PlayCircleIcon, StarIcon } from 'lucide-react';
 import timeFormat from '../lib/timeFormat';
 import DateSelect from '../components/DateSelect';
 import MovieCard from '../components/MovieCard';
+import Loading from '../components/Loading';
 
 const MovieDetails = () => {
   const navigate = useNavigate();
@@ -13,12 +14,15 @@ const MovieDetails = () => {
   const [show, setShow] = useState(null);
 
   const getShow = async () => {
-    const show = dummyShowsData.find(show => show._id == id)
-    setShow({
-      movie: show,
-      dateTime: dummyDateTimeData
-    })
-  }
+    const show = dummyShowsData.find(show => show._id === id)
+    if (show) {
+      
+      setShow({
+        movie: show,
+        dateTime: dummyDateTimeData
+      })
+    }
+    }
 
   useEffect(() => {
     getShow();
@@ -31,7 +35,7 @@ const MovieDetails = () => {
   className='w-64 md:w-72 h-auto rounded-xl object-cover mx-auto md:mx-0 mt-6' 
   alt="" 
 />
-        <div className='relative flex flex-col gap-3'>
+        <div className='relative flex flex-col gap-3 pt-6'>
           <BlurCircle top='-100px' left='-100px' />
           <p className='text-primary'>ENGLISH</p>
           <h1 className='text-4xl font-semibold max-w-96 text-balance'>{show.movie.title}</h1>
@@ -84,9 +88,7 @@ const MovieDetails = () => {
 
       </div>
     </div>
-  ) : <div>
-    Loading...
-  </div>
+  ) : <Loading />
 }
 
 export default MovieDetails
