@@ -22,7 +22,7 @@ const syncUserCreation = inngest.createFunction(
       };
 
       await User.create(userData);
-      console.log("✅ User Created:", userData);
+      console.log("User Created:", userData);
     } catch (error) {
       console.log("Create User Error:", error.message);
     }
@@ -40,7 +40,7 @@ const syncUserDeletion = inngest.createFunction(
       const { id } = event.data;
 
       await User.findByIdAndDelete(id);
-      console.log("🗑️ User Deleted:", id);
+      console.log("User Deleted:", id);
     } catch (error) {
       console.log("Delete User Error:", error.message);
     }
@@ -64,7 +64,7 @@ const syncUserUpdation = inngest.createFunction(
       };
 
       await User.findByIdAndUpdate(id, userData, { new: true });
-      console.log("🔄 User Updated:", id);
+      console.log("User Updated:", id);
     } catch (error) {
       console.log("Update User Error:", error.message);
     }
