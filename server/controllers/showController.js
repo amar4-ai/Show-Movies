@@ -142,7 +142,7 @@ export const addShow = async (req, res) => {
 // }
 export const getShows = async (req, res) => {
     try {
-        const shows = await Show.find({ showDateTime: { $gte: new Date() } })
+        const shows = await Show.find({ })
             .populate('movie')
             .sort({ showDateTime: 1 });
         
