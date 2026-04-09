@@ -9,6 +9,7 @@ import showRouter from './routes/showRoute.js';
 import bookingRouter from './routes/bookingRoute.js';
 import adminRouter from './routes/adminRoute.js';
 import userRouter from './routes/userRoute.js';
+import { stripeWebhooks } from './controllers/stripeWebhooks.js';
 
 
 const app = express();
@@ -21,6 +22,9 @@ app.use(express.json());
 app.use(cors());
 
 await connectDB()
+
+//Stripe webhooks Route
+app.use('/api/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
 
 app.get('/', (req,res)=> res.send('Server is Live!'));
 app.use('/api/inngest', serve({client: inngest, functions}))
