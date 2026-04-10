@@ -129,7 +129,7 @@ const sendBookingsConfirmationEmail = inngest.createFunction(
      }).populate('user');
 
       if (!booking || !booking.show || !booking.show.movie || !booking.user) {
-      console.log("❌ Missing booking data");
+    
       return;
     }
 
@@ -152,7 +152,7 @@ const sendBookingsConfirmationEmail = inngest.createFunction(
       <p>Thanks for booking with us!<br/>- Show-Time Teams</p>
       </div>`
      });
-       console.log("✅ Email sent");
+      
   }
 
 )
