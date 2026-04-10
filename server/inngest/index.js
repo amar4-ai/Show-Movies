@@ -2,6 +2,7 @@ import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
 import Show from "../models/Show.js";
+import sendEmail from "../configs/nodeMailer.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "movie-ticket-booking" });
@@ -74,26 +75,22 @@ const syncUserUpdation = inngest.createFunction(
 );
 
 //Inngest function to cancel booking and release seats of show after 10 minutes of booking created if payement is not made
-const releaseSeatsAndDeleteBooking =inngest.createFunction(
-  {id: 'release-seats-delete-booking',
- triggers: [{event: "app/checkPayment"}],
+const releaseSeatsAndDeleteBooking = inngest.createFunction(
+  {
+    id: 'release-seats-delete-booking',
+    triggers: [{ event: "app/checkPayment" }],
   },
-  async({event, step})=>{
-//  const tenMinutesLater = new Date(Date.now() + 10 * 60 * 1000);
-//  await step.sleepUntill('wait-for-10-minutes',
-//   await step.run('check-payment-status', async()=>{
-//     const bookingId= event.data.bookingId;
-//     const booking = await Booking.findById(bookingId)
+  async ({ event, step }) => {
 
-  const bookingId = event.data.bookingId;
+    const bookingId = event.data.bookingId;
 
-    // ✅ Wait for 10 minutes
+    // Wait for 10 minutes
     await step.sleepUntil(
       'wait-for-10-minutes',
       new Date(Date.now() + 10 * 60 * 1000)
     );
 
-    // ✅ Then run logic
+    // Then run logic
     await step.run('check-payment-status', async () => {
       const booking = await Booking.findById(bookingId);
 
@@ -101,19 +98,56 @@ const releaseSeatsAndDeleteBooking =inngest.createFunction(
       if (!booking) return;
 
 
-    //If payment is not made , release seats and delete booking
-    if(!booking.isPaid){
-      const show= await Show.findById(booking.show);
-      booking.bookedSeats.forEach((seat)=>{
-        delete show.occupiedSeats[seat]
-      });
-      show.markModified('occupiedSeats')
-      await show.save()
-      await Booking.findByIdAndDelete(booking._id)
-    }
-  })
- 
+      //If payment is not made , release seats and delete booking
+      if (!booking.isPaid) {
+        const show = await Show.findById(booking.show);
+        booking.bookedSeats.forEach((seat) => {
+          delete show.occupiedSeats[seat]
+        });
+        show.markModified('occupiedSeats')
+        await show.save()
+        await Booking.findByIdAndDelete(booking._id)
+      }
+    })
+
   }
+)
+
+
+//Inngest Function to send email when user books a show
+const sendBookingsConfirmationEmail = inngest.createFunction(
+  {
+    id: "send-booking-confirmation-email",
+    triggers: [{ event: "app/show.booked" }],
+  },
+  async(event, step)=>{
+     const {bookingId} = event.data;
+
+     const booking = await Booking.findById(bookingId).populate({
+      path: 'show',
+      populate: {path: "movie", model:"Moie"}
+     }).populate('user');
+
+     await sendEmail({
+      to: booking.user.email,
+      subject:`Payment Confirmation: "${booking.show.movie.title}" booked! `,
+      body: `<div style="font-family: Arial, sans-serif; line-height: 1.5;">
+      <h2>Hi ${booking.user.name},</h2>
+      <p>Your booking for <strong style="color: #F84565;">"${booking.show.movie.title}"</strong>is confirmed.</p>
+      <p>
+      <strong>Date:</strong> ${new Date(booking.show.showDateTime).toLocaleString('en-US', {timeZone:
+        'Asia/Kathmandu'
+      })}<br/>
+      <strong>Time:</strong> ${new Date(booking.show.showDateTime).toLocaleString('en-US', {timeZone:
+        'Asia/Kathmandu'
+      })}
+      </p>
+      <p>Enjoy the show! 🍿</p>
+      <p>Thanks for booking with us!<br/>- Show-Time Teams</p>
+      </div>`
+     })
+  }
+
 )
 
 // Export all functions
@@ -121,5 +155,6 @@ export const functions = [
   syncUserCreation,
   syncUserDeletion,
   syncUserUpdation,
-  releaseSeatsAndDeleteBooking
+  releaseSeatsAndDeleteBooking,
+  sendBookingsConfirmationEmail
 ];
