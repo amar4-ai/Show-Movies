@@ -75,16 +75,10 @@ export const createBooking = async (req, res) => {
         });
 
         booking.paymentLink = session.url;
-
-        // AUTO-MARK AS PAID IN DEVELOPMENT
-        // if (process.env.NODE_ENV === 'development') {
-        //     booking.isPaid = true;
-        //     booking.paymentLink = "";
-        // }
         await booking.save();
         // Run Inngest Sheduler Function to check payment status after 10 minutes
         await inngest.send({
-            name: "app/checkpayment",
+            name: "app/checkPayment",
             data: {
                 bookingId: booking._id.toString()
             }
