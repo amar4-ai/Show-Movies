@@ -125,14 +125,20 @@ const sendBookingsConfirmationEmail = inngest.createFunction(
 
      const booking = await Booking.findById(bookingId).populate({
       path: 'show',
-      populate: {path: "movie", model:"Moie"}
+      populate: {path: "movie", model:"Movie"}
      }).populate('user');
+
+      if (!booking || !booking.show || !booking.show.movie || !booking.user) {
+      console.log("❌ Missing booking data");
+      return;
+    }
 
      await sendEmail({
       to: booking.user.email,
       subject:`Payment Confirmation: "${booking.show.movie.title}" booked! `,
       body: `<div style="font-family: Arial, sans-serif; line-height: 1.5;">
       <h2>Hi ${booking.user.name},</h2>
+       <p>Your booking is confirmed 🎉</p>
       <p>Your booking for <strong style="color: #F84565;">"${booking.show.movie.title}"</strong>is confirmed.</p>
       <p>
       <strong>Date:</strong> ${new Date(booking.show.showDateTime).toLocaleString('en-US', {timeZone:
@@ -145,7 +151,8 @@ const sendBookingsConfirmationEmail = inngest.createFunction(
       <p>Enjoy the show! 🍿</p>
       <p>Thanks for booking with us!<br/>- Show-Time Teams</p>
       </div>`
-     })
+     });
+       console.log("✅ Email sent");
   }
 
 )

@@ -59,31 +59,7 @@ export const addShow = async (req, res) => {
             movie = await Movie.create(movieDetails);
 
         }
-//         const showsToCreate = [];
-//         showsInput.forEach(show => {
-//             const showDate = show.date;
-//             show.time.forEach((time) => {
-//                 const dateTimeString = `${showDate}T${time}`;
-//                 const showDateTime = new Date(dateTimeString);
-//                 showsToCreate.push({
-//                     movie: movieId,
-//                     showDateTime: new Date(dateTimeString),
-//                     showPrice,
-//                     occupiedSeats: {}
-//                 })
-//             })
-//         });
 
-//         if (showsToCreate.length > 0) {
-//             await Show.insertMany(showsToCreate);
-//         }
-
-//         res.json({ success: true, message: "Show Added successfully." })
-//     } catch (error) {
-//         console.log(error)
-//         res.json({ success: false, message: error.message })
-//     }
-// }
  const showsToCreate = [];
         showsInput.forEach(show => {
             const showDate = show.date; // Expected format: "2026-04-10"
@@ -117,13 +93,13 @@ export const addShow = async (req, res) => {
             console.log('No valid shows to create');
         }
 
-        res.json({ success: true, message: "Show Added successfully." })
         // Trigger Inngest event
         await inngest.send({
             name: "app/show.added",
             data: {movieTitle: movie.title}
-        })
+        });
         
+        res.json({ success: true, message: "Show Added successfully." })
     } catch (error) {
         console.log(error)
         res.json({ success: false, message: error.message })
@@ -131,22 +107,6 @@ export const addShow = async (req, res) => {
 }
 //API to get all shows from the database
 
-// export const getShows = async (req, res) => {
-//     try {
-//         const shows = await Show.find({ showDateTime: { $gte: new Date() } })
-//             .populate('movie')
-//             .sort({ showDateTime: 1 });
-//         console.log('All shows in DB:', shows);
-
-//         //filter unique shows
-//         const uniqueShows = new Set(shows.map(show => show.movie))
-
-//         res.json({ success: true, shows: Array.from(uniqueShows) })
-//     } catch (error) {
-//         console.log(error)
-//         res.json({ success: false, message: error.message })
-//     }
-// }
 export const getShows = async (req, res) => {
     try {
         const shows = await Show.find({ })
