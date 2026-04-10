@@ -79,11 +79,26 @@ const releaseSeatsAndDeleteBooking =inngest.createFunction(
  triggers: [{event: "app/checkPayment"}],
   },
   async({event, step})=>{
- const tenMinutesLater = new Date(Date.now() + 10 * 60 * 1000);
- await step.sleepUntill('wait-for-10-minutes',
-  await step.run('check-payment-status', async()=>{
-    const bookingId= event.data.bookingId;
-    const booking = await Booking.findById(bookingId)
+//  const tenMinutesLater = new Date(Date.now() + 10 * 60 * 1000);
+//  await step.sleepUntill('wait-for-10-minutes',
+//   await step.run('check-payment-status', async()=>{
+//     const bookingId= event.data.bookingId;
+//     const booking = await Booking.findById(bookingId)
+
+  const bookingId = event.data.bookingId;
+
+    // ✅ Wait for 10 minutes
+    await step.sleepUntil(
+      'wait-for-10-minutes',
+      new Date(Date.now() + 10 * 60 * 1000)
+    );
+
+    // ✅ Then run logic
+    await step.run('check-payment-status', async () => {
+      const booking = await Booking.findById(bookingId);
+
+      // Safety check
+      if (!booking) return;
 
 
     //If payment is not made , release seats and delete booking
@@ -97,7 +112,7 @@ const releaseSeatsAndDeleteBooking =inngest.createFunction(
       await Booking.findByIdAndDelete(booking._id)
     }
   })
- )
+ 
   }
 )
 
