@@ -16,15 +16,15 @@ const app = express();
 const port = 3000;
 app.use(clerkMiddleware())
 
-
 //middleware 
-app.use(express.json());
 app.use(cors());
 
 await connectDB()
 
-//Stripe webhooks Route
-app.use('/api/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
+//Stripe webhooks Route - POST only
+app.post('/api/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
+
+app.use(express.json());
 
 app.get('/', (req,res)=> res.send('Server is Live!'));
 app.use('/api/inngest', serve({client: inngest, functions}))
@@ -32,6 +32,5 @@ app.use('/api/show', showRouter)
 app.use('/api/booking', bookingRouter)
 app.use('/api/admin',adminRouter)
 app.use('/api/user', userRouter)
-
 
 app.listen(port, ()=> console.log(`Server listening at Port:${port}`) )
